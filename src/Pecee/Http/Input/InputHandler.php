@@ -293,17 +293,19 @@ class InputHandler
     public function all(array $filter = []): array
     {
         $output = $_GET;
+        $validJSONMethods = ['post', 'put', 'patch'];
 
-        if ($this->request->getMethod() === 'post') {
+        if (in_array($this->request->getMethod(), $validJSONMethods)) {
 
             // Append POST data
             $output += $_POST;
             $contents = file_get_contents('php://input');
+            $isJsonContentType = strpos($this->request->getHeader('content-type'), '/json') !== false;
 
             // Append any PHP-input json
-            if (strpos(trim($contents), '{') === 0) {
+            if ($isJsonContentType) {
                 $post = json_decode($contents, true);
-                if ($post !== false) {
+                if (is_array($post)) {
                     $output += $post;
                 }
             }
